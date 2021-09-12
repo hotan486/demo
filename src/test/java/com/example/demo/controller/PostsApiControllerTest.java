@@ -8,6 +8,7 @@ import org.junit.After;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
@@ -23,6 +24,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@AutoConfigureMockMvc
 @RunWith(SpringRunner.class)
 @SpringBootTest
 class PostsApiControllerTest {
@@ -37,6 +39,7 @@ class PostsApiControllerTest {
     @Autowired
     private WebApplicationContext context;
 
+    @Autowired
     private MockMvc mvc;
 
     @After
@@ -55,16 +58,22 @@ class PostsApiControllerTest {
                 .author("author")
                 .build();
 
-        String url = "http://localhost:" + "8080" + "/api/v1/posts";
+        System.out.println("requestDto : " + requestDto);
+        System.out.println("requestDto ?? : " + new ObjectMapper().writeValueAsString(requestDto));
+
+        String test = (String) new ObjectMapper().writeValueAsString(requestDto);
+
 
         //when
-        mvc.perform(post(url)
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(new ObjectMapper().writeValueAsString(requestDto)))
+        mvc.perform(post("/api/v1/posts")
+                .contentType(MediaType.APPLICATION_JSON)
+                .characterEncoding("UTF-8")
+                .content(test))
                 .andExpect(status().isOk());
 
         //then
         List<Posts> all = postsRepository.findAll();
+
         assertThat(all.get(0).getTitle()).isEqualTo(title);
         assertThat(all.get(0).getContent()).isEqualTo(content);
     }
